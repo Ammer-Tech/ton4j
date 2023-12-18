@@ -1,21 +1,23 @@
 package org.ton.java.tonlib.types;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.ton.java.tonlib.base.TypedAsyncObject;
+@SuperBuilder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Fees extends TypedAsyncObject {
+    private long in_fwd_fee;
+    private long storage_fee;
+    private long gas_fee;
+    private long fwd_fee;
 
-@Builder
-@Setter
-@Getter
-@ToString
-public class Fees {
-    @SerializedName("@type")
-    final String type = "fees";
-    long in_fwd_fee;
-    long storage_fee;
-    long gas_fee;
-    long fwd_fee;
+    @Override
+    public String getTypeObjectName() {
+        return "fees";
+    }
 }
 

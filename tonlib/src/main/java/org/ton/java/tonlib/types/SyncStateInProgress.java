@@ -1,15 +1,21 @@
 package org.ton.java.tonlib.types;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.ton.java.tonlib.base.TypedAsyncObject;
+@SuperBuilder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class SyncStateInProgress extends TypedAsyncObject {
+    private long from_seqno;
+    private long to_seqno;
+    private long current_seqno;
 
-@Getter
-@ToString
-public class SyncStateInProgress {
-    @SerializedName(value = "@type")
-    final String type = "syncStateInProgress";
-    long from_seqno;
-    long to_seqno;
-    long current_seqno;
+    @Override
+    public String getTypeObjectName() {
+        return "syncStateInProgress";
+    }
 }

@@ -1,20 +1,28 @@
 package org.ton.java.tonlib.types;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.ton.java.tonlib.base.TypedAsyncObject;
 
-@Builder
-@Setter
-@Getter
-@ToString
-public class AccountTransactionId {
+import java.math.BigInteger;
 
-    @SerializedName("@type")
-    final String type = "blocks.accountTransactionId";
-    String account; //after_hash
-    long lt; //after_lt
+@SuperBuilder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AccountTransactionId extends TypedAsyncObject {
+    private String account; //after_hash
+    private BigInteger lt; //after_lt
+
+    public void setLt(String value){
+        this.lt = new BigInteger(value);
+    }
+
+    @Override
+    public String getTypeObjectName() {
+        return "blocks.accountTransactionId";
+    }
 }
 

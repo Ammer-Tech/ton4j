@@ -1,16 +1,11 @@
 package org.ton.java.tonlib.queries;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-@Builder
-@Setter
-@Getter
-@ToString
-public class GetLastQuery {
-    @SerializedName("@type")
-    final String type = "blocks.getMasterchainInfo";
+import lombok.experimental.SuperBuilder;
+import org.ton.java.tonlib.base.TypedAsyncObject;
+@SuperBuilder
+public class GetLastQuery extends TypedAsyncObject {
+    @Override
+    public String getTypeObjectName() {
+        return "blocks.getMasterchainInfo";
+    }
 }

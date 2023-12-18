@@ -1,21 +1,23 @@
 package org.ton.java.tonlib.types;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.ton.java.tonlib.base.TypedAsyncObject;
+@SuperBuilder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class RawAccountState extends TypedAsyncObject {
+    private String balance;
+    private String code;
+    private String data;
+    private LastTransactionId last_transaction_id;
+    private long sync_utime;
 
-@Builder
-@Setter
-@Getter
-@ToString
-public class RawAccountState {
-    @SerializedName(value = "@type")
-    final String type = "raw.accountState";
-    String balance;
-    String code;
-    String data;
-    LastTransactionId last_transaction_id;
-    long sync_utime;
+    @Override
+    public String getTypeObjectName() {
+        return "raw.accountState";
+    }
 }

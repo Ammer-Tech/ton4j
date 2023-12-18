@@ -1,14 +1,13 @@
 package org.ton.java.tonlib.types;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Setter
 @Getter
-@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountAddressOnly {
-    String account_address;
+    private String account_address;
 }

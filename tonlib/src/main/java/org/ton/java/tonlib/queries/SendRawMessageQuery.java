@@ -1,17 +1,18 @@
 package org.ton.java.tonlib.queries;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-@Builder
-@Setter
-@Getter
-@ToString
-public class SendRawMessageQuery {
-    @SerializedName(value = "@type")
-    final String type = "raw.sendMessage";
-    String body;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.ton.java.tonlib.base.TypedAsyncObject;
+@SuperBuilder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SendRawMessageQuery extends TypedAsyncObject {
+    private String body;
+    @Override
+    public String getTypeObjectName() {
+        return "raw.sendMessage";
+    }
 }

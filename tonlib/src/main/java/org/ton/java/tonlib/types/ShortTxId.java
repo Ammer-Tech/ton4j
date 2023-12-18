@@ -1,18 +1,24 @@
 package org.ton.java.tonlib.types;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-@Builder
-@Setter
-@Getter
-@ToString
+import java.math.BigInteger;
+
+@SuperBuilder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ShortTxId {
-    long mode;
-    String account; //base64
-    long lt;
-    String hash;
+    private long mode;
+    private String account; //base64
+    private BigInteger lt;
+    private String hash;
+
+    public void setLt(String value){
+        this.lt = new BigInteger(value);
+    }
 }
 

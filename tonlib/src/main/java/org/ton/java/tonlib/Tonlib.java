@@ -125,8 +125,8 @@ public class Tonlib {
                             "Keystore path: %s\nPath to global config: %s\n" +
                             "Testnet: %s\n" +
                             "Receive timeout: %s seconds\n" +
-                            "Receive retry times: %s%n\n",
-                    "Raw configuration: %s%n",
+                            "Receive retry times: %s%n\n" + 
+                            "Raw configuration: %s%n",
                     this.pathToTonlibSharedLib, this.verbosityLevel, this.verbosityLevel.ordinal(),
                     this.keystoreInMemory, this.keystorePath, this.pathToGlobalConfig,
                     this.testnet, this.receiveTimeout, this.receiveRetryTimes, this.configData);

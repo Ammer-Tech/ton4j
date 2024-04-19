@@ -694,10 +694,67 @@ public class Exec {
     
     return cb.endCell ();
   }
+  
+  public static Cell mint_boc(String fname) throws Exception {
+    byte[] arr = read_whole_file (fname);
+    if (arr.length != 36) {
+      System.out.println ("pubkey bad size");
+      throw new Exception ("AAA");
+    }
+    if (arr[0] != (byte)0xc6) {
+      System.out.println ("pubkey bad magic");
+      throw new Exception ("AAA");
+    }
+    byte[] pubkey = Arrays.copyOfRange(arr, 4, 36);
+    if (pubkey.length != 32) {
+      System.out.println ("pubkey bad size");
+      throw new Exception ("AAA");
+    }
 
+    CellBuilder cb = CellBuilder.beginCell ();
+    cb.storeInt (0xddc9b4d4, 32);
+    cb.storeInt (0, 64);
+    cb.storeCoins (BigInteger.valueOf (1000000000));
+    cb.storeBytes (pubkey);
+
+    return cb.endCell ();
+  }
+
+  private static Cell amton_to_sign (byte [] signature, int seqno, int valid_until, Address src, byte dst[], long amtons) {
+    CellBuilder cb = CellBuilder.beginCell ();
+    if (signature.length > 0) {
+      // 10 - external message
+      // 00 - src addr none 
+      // 10 - addr-std
+      // 0 - not anycast
+      boolean []b01 = {true, false, false, false, true, false, false};
+      cb.storeBits(b01);
+      cb.storeInt (src.wc, 8);
+      cb.storeBytes (src.hashPart);
+      cb.storeCoins (BigInteger.valueOf(0)); // import fee
+      cb.storeBit(false);
+      cb.storeBit(false); // body inlined
+      cb.storeBytes(signature); // signature
+    }
+    
+    cb.storeInt (valid_until, 32); //unix_time
+    cb.storeInt (seqno, 32); //seqno
+    cb.storeInt (0x7362d09c, 32);
+    cb.storeInt (0, 64); // query_id
+    cb.storeCoins (amtons);
+    cb.storeBytes (dst_public_key);
+
+    return cb.endCell ();
+  }
   public static void main (String args[]) throws Exception {
-    Cell res = Exec.amton_init_smartcontract();
-    res.toFile ("init_external_message.boc", true);
+    if (args[0].equals ("minter")) {
+      Cell res = Exec.amton_init_smartcontract();
+      res.toFile ("init_external_message.boc", true);
+    } else if (args[0].equals ("mint_boc")) {
+      Cell res = Exec.mint_boc(args[1]);
+      res.toFile (args[1] + ".mint.boc", true);
+    } else if (args[0].equals ("to_sign")) {
+    }
 
     //Exec exc = new Exec ();
 

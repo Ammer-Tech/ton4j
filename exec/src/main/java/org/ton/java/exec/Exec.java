@@ -640,6 +640,81 @@ public class Exec {
       throw e;
     }
   }
+  
+  public static byte[] read_public_key (String fname) throws Exception {
+    byte[] arr = read_whole_file (fname);
+    if (arr.length != 36) {
+      System.out.println ("pubkey bad size");
+      throw new Exception ("AAA");
+    }
+    if (arr[0] != (byte)0xc6) {
+      System.out.println ("pubkey bad magic");
+      throw new Exception ("AAA");
+    }
+    byte[] pubkey = Arrays.copyOfRange(arr, 4, 36);
+    if (pubkey.length != 32) {
+      System.out.println ("pubkey bad size");
+      throw new Exception ("AAA");
+    }
+    return pubkey;
+  }
+  
+  public static Address amton_master_address() throws Exception {
+    Cell masterScCode = Cell.fromBoc (read_whole_file ("master_code.boc")); 
+    Cell walletScCode = Cell.fromBoc (read_whole_file ("wallet_code.boc")); 
+
+    Address owner = new Address ("0QDPk_hRKx4BZaxBIixSYiIzNwAn9CfhP0uZuMqD5OaKjKTc");
+
+    CellBuilder contentB = CellBuilder.beginCell();
+    Cell content = contentB.endCell();
+
+    CellBuilder masterScDataB = CellBuilder.beginCell(); 
+    masterScDataB.storeInt (0, 1); // inited
+    masterScDataB.storeCoins(/*total supply*/BigInteger.valueOf(0));
+    masterScDataB.storeCoins(/*nanograms per coin*/BigInteger.valueOf(1000000000));
+    masterScDataB.storeBits (new boolean[]{true, false, false});
+    masterScDataB.storeInt (owner.wc, 8);
+    masterScDataB.storeBytes (owner.hashPart);
+    masterScDataB.storeRef (content);
+    masterScDataB.storeRef (walletScCode);
+    Cell masterScData = masterScDataB.endCell();
+
+    CellBuilder init_code = CellBuilder.beginCell();
+    init_code.storeBits (new boolean[]{false, false, true, true}); // magic
+    init_code.storeRef (masterScCode);
+    init_code.storeRef (masterScData);
+    init_code.storeBit (false); // empty HashMap = Libraries
+                                                 
+    byte []init_code_hash = init_code.endCell().hash();
+
+    return new Address("0:" + Utils.bytesToHex(init_code_hash));
+  };
+  
+  public static Address amton_wallet_address(byte[] pubkey) throws Exception {
+    Address master_address = amton_master_address();
+    Cell walletScCode = Cell.fromBoc (read_whole_file ("wallet_code.boc")); 
+
+    CellBuilder walletScDataB = CellBuilder.beginCell(); 
+    walletScDataB.storeCoins(/*balance*/BigInteger.valueOf(0));
+    walletScDataB.storeBytes(/*pubkey*/pubkey);
+    walletScDataB.storeInt(/*seqno*/0, 32);
+    walletScDataB.storeInt(/*sent_request*/0, 1);
+    walletScDataB.storeBits(new boolean[]{true, false, false}); // 10 - AddrStd + 0 - Anycast
+    walletScDataB.storeInt(master_address.wc, 8);
+    walletScDataB.storeBytes(master_address.hashPart);
+    
+    Cell walletScData = walletScDataB.endCell();
+
+    CellBuilder init_code = CellBuilder.beginCell();
+    init_code.storeBits (new boolean[]{false, false, true, true}); // magic
+    init_code.storeRef (walletScCode);
+    init_code.storeRef (walletScData);
+    init_code.storeBit (false); // empty HashMap = Libraries
+                                                 
+    byte []init_code_hash = init_code.endCell().hash();
+
+    return new Address("0:" + Utils.bytesToHex(init_code_hash));
+  };
 
   public static Cell amton_init_smartcontract() throws Exception {
     Cell masterScCode = Cell.fromBoc (read_whole_file ("master_code.boc")); 
@@ -714,46 +789,69 @@ public class Exec {
     CellBuilder cb = CellBuilder.beginCell ();
     cb.storeInt (0xddc9b4d4, 32);
     cb.storeInt (0, 64);
-    cb.storeCoins (BigInteger.valueOf (1000000000));
+    cb.storeCoins (BigInteger.valueOf (10000000000L));
     cb.storeBytes (pubkey);
 
     return cb.endCell ();
   }
 
-  private static Cell amton_to_sign (byte [] signature, int seqno, int valid_until, Address src, byte dst[], long amtons) {
-    CellBuilder cb = CellBuilder.beginCell ();
-    if (signature.length > 0) {
-      // 10 - external message
-      // 00 - src addr none 
-      // 10 - addr-std
-      // 0 - not anycast
-      boolean []b01 = {true, false, false, false, true, false, false};
-      cb.storeBits(b01);
-      cb.storeInt (src.wc, 8);
-      cb.storeBytes (src.hashPart);
-      cb.storeCoins (BigInteger.valueOf(0)); // import fee
-      cb.storeBit(false);
-      cb.storeBit(false); // body inlined
-      cb.storeBytes(signature); // signature
+  private static Cell amton_create_transfer_boc (byte[] src_public_key, byte[] dst_public_key, int valid_until, int seqno, long amount) throws Exception {
+    Address src = amton_wallet_address (src_public_key);
+    byte[] signature = new byte[64];
+    for (int i = 0; i < 32; i++) {
+      signature[i] = src_public_key[i];
     }
+
+    CellBuilder cb2 = CellBuilder.beginCell ();
+    cb2.storeBytes(signature); // signature
     
-    cb.storeInt (valid_until, 32); //unix_time
-    cb.storeInt (seqno, 32); //seqno
-    cb.storeInt (0x7362d09c, 32);
-    cb.storeInt (0, 64); // query_id
-    cb.storeCoins (amtons);
-    cb.storeBytes (dst_public_key);
+    cb2.storeInt (valid_until, 32); //unix_time
+    cb2.storeInt (seqno, 32); //seqno
+    cb2.storeInt (0xf8a7ea5, 32);
+    cb2.storeInt (0, 64); // query_id
+    cb2.storeCoins (BigInteger.valueOf (amount));
+    cb2.storeBytes (dst_public_key);
+
+
+    CellBuilder cb = CellBuilder.beginCell ();
+    // 10 - external message
+    // 00 - src addr none 
+    // 10 - addr-std
+    // 0 - not anycast
+    boolean []b01 = {true, false, false, false, true, false, false};
+    cb.storeBits(b01);
+    cb.storeInt (src.wc, 8);
+    cb.storeBytes (src.hashPart);
+    cb.storeCoins (BigInteger.valueOf(0)); // import fee
+    cb.storeBit(false);
+    cb.storeBit(true); // body NOT inlined
+    cb.storeRef(cb2.endCell());
 
     return cb.endCell ();
   }
+
   public static void main (String args[]) throws Exception {
-    if (args[0].equals ("minter")) {
+    if (args[0].equals ("minter_addr")) {
+      Address res = Exec.amton_master_address();
+      System.out.println ("masterAddr = " + res.toString (true, false, true, false));
+    } else if (args[0].equals ("minter")) {
       Cell res = Exec.amton_init_smartcontract();
       res.toFile ("init_external_message.boc", true);
     } else if (args[0].equals ("mint_boc")) {
       Cell res = Exec.mint_boc(args[1]);
       res.toFile (args[1] + ".mint.boc", true);
-    } else if (args[0].equals ("to_sign")) {
+    } else if (args[0].equals ("wallet_addr")) {
+      Address res = Exec.amton_wallet_address(Exec.read_public_key(args[1]));
+      System.out.println ("walletAddr = " + res.toString (true, false, true, false));
+    } else if (args[0].equals ("transfer")) {
+      byte[] srcPubKey = Exec.read_public_key(args[1]);
+      byte[] dstPubKey = Exec.read_public_key(args[2]);
+      int valid_until = Integer.valueOf(args[3]);
+      int seqno = Integer.valueOf(args[4]);
+      long amount = Long.valueOf(args[5]); 
+
+      Cell res = Exec.amton_create_transfer_boc (srcPubKey, dstPubKey, valid_until, seqno, amount);
+      res.toFile ("query.boc", true);
     }
 
     //Exec exc = new Exec ();

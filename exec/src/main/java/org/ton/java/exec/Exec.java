@@ -2,6 +2,7 @@ package org.ton.java.exec;
 
 import org.ton.java.utils.Utils;
 import org.ton.java.cell.Cell;
+import org.ton.java.cell.CellSlice;
 import org.ton.java.address.Address;
 import org.ton.java.cell.CellBuilder;
 import org.ton.java.tonlib.Tonlib;
@@ -25,6 +26,14 @@ import java.util.concurrent.TimeUnit;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.FileInputStream;
+
+import org.ton.java.exec.UUIDCodec;
+import java.util.UUID;
+import com.jsoniter.JsonIterator;
+import com.jsoniter.output.EncodingMode;
+import com.jsoniter.output.JsonStream;
+import com.jsoniter.spi.DecodingMode;
+import com.jsoniter.spi.JsoniterSpi;
 
 import static java.util.Objects.isNull;
 
@@ -52,7 +61,7 @@ public class Exec {
     Cell cell = cb.endCell ();
     return new Address ("0:" + Utils.bytesToHex(cell.hash()));
   }
-  private static Cell create_message (byte [] signature, int seqno, int valid_until, String payload, byte key[], Address src, Address dst, long grams) {
+  private static Cell create_message (byte [] signature, int seqno, int valid_until, String payload, Cell payload_cell, byte key[], Address src, Address dst, long grams) {
     CellBuilder cb = CellBuilder.beginCell ();
     if (signature.length > 0) {
       // 10 - external message
@@ -111,33 +120,37 @@ public class Exec {
 
     // magic:
     //   0 - empty extra currency collection 
-    //   8 bits ??
-    //   ihr_fee = 0G, 1 bit
-    //   fwd_fee = 0G, 1 bit
+    //   ihr_fee = 0G, 4 bit
+    //   fwd_fee = 0G, 4 bit
     //   created_lt = 0LL, 64 bits
     //   created_at = 0I, 32 bits
-    for (int i = 0; i < 9 + 1 + 1 + 64 + 32; i++) {
-      cb2.storeBit (false);
+    //   state = false, 1 bit
+    cb2.storeUint(0, 1 + 4 + 4 + 64 + 32 + 1);
+    if (payload_cell.bits.getUsedBits() > 0) {
+      cb2.storeBit(true); // message body in a reference
+      cb2.storeSlice (CellSlice.beginParse(payload_cell));
+    } else {
+      cb2.storeBit(false); // inlined message body
+      if (payload.length() > 0) {
+        cb2.storeInt (0, 32);
+        cb2.storeString (payload);
+      }
     }
-    if (payload.length() > 0) {
-      cb2.storeInt (0, 32);
-    }
-    cb2.storeString (payload);
     cb.storeRef (cb2.endCell ());
     return cb.endCell ();
   }
-  private static Cell create_unsigned_message(int seqno, int valid_until, String payload, byte key[], Address src, Address dst, long grams) {
+  private static Cell create_unsigned_message(int seqno, int valid_until, String payload, Cell payload_cell, byte key[], Address src, Address dst, long grams) {
     byte [] signature = {};
-    return create_message (signature, seqno, valid_until, payload, key, src, dst, grams); 
+    return create_message (signature, seqno, valid_until, payload, payload_cell, key, src, dst, grams); 
   }
-  public static byte[] create_data_to_sign(int seqno, int valid_until, String payload, byte key[], Address src, Address dst, long grams) {
-    return create_unsigned_message (seqno, valid_until, payload, key, src, dst, grams).hash (); 
+  public static byte[] create_data_to_sign(int seqno, int valid_until, String payload, Cell payload_cell, byte key[], Address src, Address dst, long grams) {
+    return create_unsigned_message (seqno, valid_until, payload, payload_cell, key, src, dst, grams).hash (); 
   }
-  public static byte[] create_signed_message(byte [] signature, int seqno, int valid_until, String payload, byte key[], Address src, Address dst, long grams) {
-    return create_message (signature, seqno, valid_until, payload, key, src, dst, grams).toBoc (); 
+  public static byte[] create_signed_message(byte [] signature, int seqno, int valid_until, String payload, Cell payload_cell, byte key[], Address src, Address dst, long grams) {
+    return create_message (signature, seqno, valid_until, payload, payload_cell, key, src, dst, grams).toBoc (); 
   }
-  public static byte[] create_in_msg_hash (byte [] signature, int seqno, int valid_until, String payload, byte key[], Address src, Address dst, long grams) {
-    return create_message (signature, seqno, valid_until, payload, key, src, dst, grams).toBoc (); 
+  public static byte[] create_in_msg_hash (byte [] signature, int seqno, int valid_until, String payload, Cell payload_cell, byte key[], Address src, Address dst, long grams) {
+    return create_message (signature, seqno, valid_until, payload, payload_cell, key, src, dst, grams).toBoc (); 
   }
 
   public static String uniform_account_name (byte workchain, ShortTxId tx) {
@@ -409,6 +422,7 @@ public class Exec {
     var tonIO = tl.getTonIO();;
     tonlib = tonIO.getTonClient ();
     BlockIdExt last_mc_block = tonlib.getLast().getLast();
+    last_mc_block = tonlib.getLast().getLast();
     System.out.println (last_mc_block.toString ());
     last_mc_seqno = last_mc_block.getSeqno ().longValue ();
     last_shards = new HashSet<String> ();
@@ -423,6 +437,7 @@ public class Exec {
     known_contracts.put ("beb0683ebeb8927fe9fc8ec0a18bc7dd17899689825a121eab46c5a3a860d0ce", "jetton_wallet");
     known_contracts.put ("feb5ff6820e2ff0d9483e7e0d62c817d846789fb4ae580c878866d959dabd5c0", "wallet_v4_r2");
     known_contracts.put ("84dafa449f98a6987789ba232358072bc0f76dc4524002a5d0918b9a75d2d599", "wallet_v3_r2");
+    known_contracts.put ("89468f02c78e570802e39979c8516fc38df07ea76a48357e0536f2ba7b3ee37b", "jetton_smartcontract");
     var shardsR = tonlib.getShards(last_mc_block);
     var shards = shardsR.getShards ();
     for (BlockIdExt shard : shards) {
@@ -829,9 +844,134 @@ public class Exec {
 
     return cb.endCell ();
   }
+  
+  private static Cell create_withdraw_message (long amount) throws Exception {
+    CellBuilder cb = CellBuilder.beginCell ();
+    cb.storeInt (0x1000, 32);
+    cb.storeInt (0, 64); // query_id
+    cb.storeCoins (BigInteger.valueOf(amount)); 
+
+    return cb.endCell ();
+  }
+
+
+  private static Cell jetton_wallet_code() throws Exception {
+    CellBuilder cb = CellBuilder.beginCell ();
+    cb.storeBytes (Utils.hexToBytes("028F452D7A4DFD74066B682365177259ED05734435BE76B5FD4BD5D8AF2B7C3D68"));
+    Cell res = cb.endCell();
+    res.isExotic = true;
+    return res;
+  }
+  
+  private static Cell jetton_wallet_init_data(Address owner_address, Address jetton_master_address) throws Exception {
+    CellBuilder cb = CellBuilder.beginCell ();
+    cb.storeUint(0, 4); // STATUS
+    cb.storeCoins(BigInteger.valueOf(0)); // BALANCE
+
+    // owner address
+    cb.storeBits(new boolean[]{true, false, false});
+    cb.storeInt(owner_address.wc, 8);
+    cb.storeBytes(owner_address.hashPart);
+    
+    // response address
+    cb.storeBits(new boolean[]{true, false, false});
+    cb.storeInt(jetton_master_address.wc, 8);
+    cb.storeBytes(jetton_master_address.hashPart);
+
+    return cb.endCell();
+  }
+
+  private static Cell jetton_wallet_state_init(Address owner_address, Address jetton_master_address) throws Exception {
+    CellBuilder cb = CellBuilder.beginCell ();
+    cb.storeUint(0, 2); // no split depth, no special
+    cb.storeBit(true); // has code
+    cb.storeRef(jetton_wallet_code());
+    cb.storeBit(true); // has data
+    cb.storeRef(jetton_wallet_init_data(owner_address, jetton_master_address));
+    cb.storeBit(false); // has no libraries
+    return cb.endCell();
+  }
+
+
+  private static Address jetton_wallet_calculate_address(Address owner_address, Address jetton_master_address) throws Exception {
+    Cell state_init = jetton_wallet_state_init (owner_address, jetton_master_address);
+    return new Address("0:" + Utils.bytesToHex(state_init.hash()));
+  }
+
+
+  private long jetton_wallet_get_balance(Address addr) throws Exception {
+    AccountAddressOnly accountAddressOnly = AccountAddressOnly.builder()
+            .account_address(addr.toString(false))
+            .build();
+    var account_state = tonlib.getRawAccountState(accountAddressOnly);
+    if (account_state == null) {
+      return 0;
+    }
+    var account_code = account_state.getCode ();
+    if (account_code == null || account_code.equals ("")) {
+      return 0;
+    }
+    
+    var account_data = account_state.getData ();
+    if (account_data == null || account_data.equals ("")) {
+      return 0;
+    }
+    var cell = Cell.fromBoc (Utils.base64ToBytes (account_data));
+    var parser = CellSlice.beginParse(cell);
+    BigInteger state = parser.loadUint(4);
+    System.out.println ("state=" + state.toString());
+    BigInteger balance = parser.loadCoins();
+    System.out.println ("balance=" + balance.toString());
+    Address owner = parser.loadAddress();
+    System.out.println ("owner=" + owner.toString(true, false, true, false));
+    Address master = parser.loadAddress();
+
+    System.out.println ("wallet " + addr.toString (true, false, true, false) + " owner=" 
+        + owner.toString(true, false, true, false) + " master=" + master.toString(true, false, true, false)
+        + " balance=" + balance.toString() + " state=" + state.toString());
+
+    return balance.longValue();
+  }
+  
+  private static Cell jetton_create_transfer_boc (Address src, Address dst, Address master_address, long jetton_amount, String comment) throws Exception {
+    Address jetton_src = jetton_wallet_calculate_address (src, master_address);
+    Address jetton_dst = jetton_wallet_calculate_address (dst, master_address);
+
+    CellBuilder cb = CellBuilder.beginCell ();
+    cb.storeInt(System.nanoTime(), 64); // query_id, maybe use random? 
+    cb.storeCoins(BigInteger.valueOf(jetton_amount));
+   
+    // dst address
+    cb.storeBits(new boolean[]{true, false, false});
+    cb.storeInt(jetton_dst.wc, 8);
+    cb.storeBytes(jetton_dst.hashPart);
+    
+    // response address
+    cb.storeBits(new boolean[]{true, false, false});
+    cb.storeInt(src.wc, 8);
+    cb.storeBytes(src.hashPart);
+  
+    cb.storeBit(false); // custom payload
+
+    cb.storeCoins(BigInteger.valueOf(0)); // forward ton amount
+    
+    if (comment.length() > 0) {
+      cb.storeInt (0, 32);
+      cb.storeString(comment);
+    }
+
+    return cb.endCell();
+  }
 
   public static void main (String args[]) throws Exception {
-    if (args[0].equals ("minter_addr")) {
+    JsoniterSpi.registerTypeEncoder(UUID.class,new UUIDCodec());
+    //Register decoders.
+    JsoniterSpi.registerTypeDecoder(UUID.class,new UUIDCodec());
+    //Register key map encoders.
+    JsoniterSpi.registerMapKeyEncoder(UUID.class,new UUIDCodec());
+    JsoniterSpi.registerMapKeyDecoder(UUID.class,new UUIDCodec());
+
+    /*if (args[0].equals ("minter_addr")) {
       Address res = Exec.amton_master_address();
       System.out.println ("masterAddr = " + res.toString (true, false, true, false));
     } else if (args[0].equals ("minter")) {
@@ -842,7 +982,11 @@ public class Exec {
       res.toFile (args[1] + ".mint.boc", true);
     } else if (args[0].equals ("wallet_addr")) {
       Address res = Exec.amton_wallet_address(Exec.read_public_key(args[1]));
-      System.out.println ("walletAddr = " + res.toString (true, false, true, false));
+      System.out.println ("walletaddr = " + res.toString (true, false, true, false));
+    } else if (args[0].equals ("withdraw")) {
+      long amount = Long.valueOf(args[1]); 
+      Cell res = Exec.create_withdraw_message (amount);
+      res.toFile ("withdraw.boc", true);
     } else if (args[0].equals ("transfer")) {
       byte[] srcPubKey = Exec.read_public_key(args[1]);
       byte[] dstPubKey = Exec.read_public_key(args[2]);
@@ -852,11 +996,23 @@ public class Exec {
 
       Cell res = Exec.amton_create_transfer_boc (srcPubKey, dstPubKey, valid_until, seqno, amount);
       res.toFile ("query.boc", true);
-    }
+    }*/
 
-    //Exec exc = new Exec ();
+    /*{
+      Address usdt_to_master_address = new Address ("EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs");
+      Address wallet_address = new Address ("UQDAqpBz_rORIhoKXEcHJG0Jyj6G8H3rGLg5MGeXgkh8b5b4");
+      Address addr = jetton_wallet_calculate_address (wallet_address, usdt_to_master_address);
+      System.out.println ("tonusdt address = " + addr.toString(true, false, true, false));
+      System.exit(-1);
+    }*/
 
-    /*exc.run ();
+    Exec exc = new Exec ();
+
+    exc.run ();
+    System.out.println (exc.get_account_type (new Address ("EQCcKgiMgfJi4eAnKwhN9yJFlINzllXo0oeuFTEe4rXThOJX")));
+    exc.jetton_wallet_get_balance(new Address ("EQCcKgiMgfJi4eAnKwhN9yJFlINzllXo0oeuFTEe4rXThOJX"));
+    //System.out.println (exc.nft_item_get_content (new Address ("EQCRH0vtTG-7rgWRfsNaVJIzDLY9d0J51z-bQOfbaJt2zWOm")));
+
     System.out.println (exc.get_account_type (new Address ("EQD4g62_gEY7s2xHf3Fs-Yl6oar1YSwBInWdChUQPkMb91hu")));
     System.out.println (exc.get_account_type (new Address ("EQCRH0vtTG-7rgWRfsNaVJIzDLY9d0J51z-bQOfbaJt2zWOm")));
     System.out.println (exc.get_account_type (new Address ("EQB8D8A9OoDoRmL7qVbUBrd_po9vNKcl44HCSw6b-c3nvcj9")));
@@ -868,6 +1024,7 @@ public class Exec {
     System.out.println (exc.nft_item_get_content (new Address ("EQDye65-jeR8kz8MlfnS0qX-5HPF_Zq4pZSKrLFSedJumy89")));
 
     System.out.println("completed");
-    exc.stop(); */
+    exc.stop();
+    System.exit(-1);
   }
 }

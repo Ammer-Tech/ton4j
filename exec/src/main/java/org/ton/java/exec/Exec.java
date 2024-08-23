@@ -162,7 +162,7 @@ public class Exec {
   }
 
   public static String uniform_account_name (byte workchain, AccountAddressOnly a) {
-    if (a == null || a.getAccount_address () == null || a.getAccount_address () == "") {
+    if (a == null || a.getAccount_address () == null || a.getAccount_address ().equals ("")) {
       return "NULL";
     }
     var addr = new Address (a.getAccount_address ());
@@ -296,22 +296,24 @@ public class Exec {
 
     /* inbound message, probably inbound transfer */
     if (out_msgs.size() == 0) {
-      System.out.println ("Inbound transfer: from=" + uniform_account_name (workchain, in_msg.getSource ()) 
+      /*System.out.println ("Inbound transfer: from=" + uniform_account_name (workchain, in_msg.getSource ()) 
                           + " to=" + uniform_account_name (workchain, in_msg.getDestination ()) + " value=" 
                           + in_msg.getValue ()  +" fwd_fee=" + in_msg.getFwd_fee () + " fee=" + rt.getFee () 
-                          + " storage_fee=" + rt.getStorage_fee () + " failed=" + failed + " action_failed=" + action_failed);
+                          + " storage_fee=" + rt.getStorage_fee () + " failed=" + failed + " action_failed=" + action_failed); */
     } else {
-      for (var out_msg : out_msgs) {
+      /*for (var out_msg : out_msgs) {
         System.out.println ("Outbound transfer: from=" + uniform_account_name (workchain, out_msg.getSource ()) 
                             + " to=" + uniform_account_name (workchain, out_msg.getDestination ()) + " value=" 
                             + out_msg.getValue () + " fwd_fee=" + out_msg.getFwd_fee () + " fee(total)=" + rt.getFee () 
                             + " storage_fee(total)=" + rt.getStorage_fee () + " failed=" + failed + " action_failed=" + action_failed);
-      }
+      }*/
     }
+  
+    jetton_message_get_transfer_amount(in_msg);
   }
   
   public void scan_new_block_transactions (BlockIdExt block_id) {
-    BlockTransactions t = tonlib.getBlockTransactions(block_id, 100);
+    BlockTransactions t = tonlib.getBlockTransactions(block_id, 1000);
 
     while (true) {
       List<ShortTxId> transactions = t.getTransactions ();
@@ -336,7 +338,6 @@ public class Exec {
       // ASSERT?
       return;
     }
-    System.out.println ("block=" + block_id + " depth=" + depth);
     BlockHeader head = tonlib.getBlockHeader (block_id);
     if (head.isAfter_split() || head.isAfter_merge()) {
       scan_new_block_transactions (block_id);
@@ -352,8 +353,6 @@ public class Exec {
 
     BlockIdExt prev_block = prev_blocks.get (0);
 
-    System.out.println (last_shards);
-
     scan_new_block_transactions_rec (prev_block, depth + 1);
     scan_new_block_transactions (block_id);
   }
@@ -363,7 +362,6 @@ public class Exec {
     if (block_id.getSeqno ().longValue () < seqno) {
       return;
     }
-    System.out.println ("found new MC block: " + block_id.toString ());
 
     scan_new_block_transactions (block_id);
   
@@ -423,7 +421,6 @@ public class Exec {
     tonlib = tonIO.getTonClient ();
     BlockIdExt last_mc_block = tonlib.getLast().getLast();
     last_mc_block = tonlib.getLast().getLast();
-    System.out.println (last_mc_block.toString ());
     last_mc_seqno = last_mc_block.getSeqno ().longValue ();
     last_shards = new HashSet<String> ();
     known_contracts = new HashMap<String,String> ();
@@ -443,7 +440,6 @@ public class Exec {
     for (BlockIdExt shard : shards) {
       last_shards.add (shard.toString ());  
     }
-    System.out.println (last_mc_block);
   }
 
   public long get_seqno (Address addr) {
@@ -459,7 +455,6 @@ public class Exec {
       return 0;
     }
     var cell = Cell.fromBoc (Utils.base64ToBytes (account_data));
-    System.out.println (cell);
     return cell.bits.preReadUint (32).intValue ();
   }
 
@@ -919,11 +914,8 @@ public class Exec {
     var cell = Cell.fromBoc (Utils.base64ToBytes (account_data));
     var parser = CellSlice.beginParse(cell);
     BigInteger state = parser.loadUint(4);
-    System.out.println ("state=" + state.toString());
     BigInteger balance = parser.loadCoins();
-    System.out.println ("balance=" + balance.toString());
     Address owner = parser.loadAddress();
-    System.out.println ("owner=" + owner.toString(true, false, true, false));
     Address master = parser.loadAddress();
 
     System.out.println ("wallet " + addr.toString (true, false, true, false) + " owner=" 
@@ -932,7 +924,39 @@ public class Exec {
 
     return balance.longValue();
   }
-  
+ 
+  private BigInteger jetton_message_get_transfer_amount(RawMessage message) {
+    try {
+      var body = message.getMsg_data().getBody();
+      var body_cell = Cell.fromBoc (Utils.base64ToBytes (body)); 
+      var slice = CellSlice.beginParse(body_cell);
+        
+      long op = slice.loadUint(32).longValue();
+
+      long transfer_opcode = Long.valueOf("f8a7ea5", 16);
+      long inbound_transfer_opcode = Long.valueOf("178d4519", 16);
+      long burn_opcode = Long.valueOf("595f07bc", 16);
+
+      if (op != transfer_opcode && op != inbound_transfer_opcode && op != burn_opcode) {
+        return BigInteger.valueOf(0);
+      }
+
+      BigInteger query_id = slice.loadUint(64);
+      BigInteger value = slice.loadCoins();
+
+      if (op == inbound_transfer_opcode) {
+        return value;
+      } else {
+        return value.multiply(new BigInteger("-1"));
+      }
+    } catch (Exception e) {
+      return BigInteger.valueOf(0);
+    } catch (Error e) {
+      return BigInteger.valueOf(0);
+    }
+    //return BigInteger.zero();
+  }
+
   private static Cell jetton_create_transfer_boc (Address src, Address dst, Address master_address, long jetton_amount, String comment) throws Exception {
     Address jetton_src = jetton_wallet_calculate_address (src, master_address);
     Address jetton_dst = jetton_wallet_calculate_address (dst, master_address);
@@ -1009,6 +1033,7 @@ public class Exec {
     Exec exc = new Exec ();
 
     exc.run ();
+    exc.loop ();
     System.out.println (exc.get_account_type (new Address ("EQCcKgiMgfJi4eAnKwhN9yJFlINzllXo0oeuFTEe4rXThOJX")));
     exc.jetton_wallet_get_balance(new Address ("EQCcKgiMgfJi4eAnKwhN9yJFlINzllXo0oeuFTEe4rXThOJX"));
     //System.out.println (exc.nft_item_get_content (new Address ("EQCRH0vtTG-7rgWRfsNaVJIzDLY9d0J51z-bQOfbaJt2zWOm")));

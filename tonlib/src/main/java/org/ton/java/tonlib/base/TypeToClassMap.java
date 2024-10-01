@@ -13,6 +13,7 @@ public class TypeToClassMap {
         put("ton.blockId",BlockId.class);
         put("ton.blockIdExt", BlockIdExt.class);
         put("blocks.transactions", BlockTransactions.class);
+        put("blocks.transactionsExt", BlockTransactionsExt.class);
         put("configInfo", ConfigInfo.class);
         put("data",Data.class);
         put("dns.entry", DnsEntry.class);

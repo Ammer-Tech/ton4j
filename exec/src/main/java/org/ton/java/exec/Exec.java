@@ -191,12 +191,12 @@ public class Exec {
     return readGramsCheck (bitstring, new BigInteger (value));
   }
 
-  public void new_transaction_callback (byte workchain, ShortTxId tx) {
-    if (skip_account_in_transaction_list (uniform_account_name (workchain, tx))) {
-      return;
-    }
+  public void new_transaction_callback (byte workchain, RawTransaction rt) {
+    //if (skip_account_in_transaction_list (uniform_account_name (workchain, tx))) {
+    //  return;
+    //}
     //System.out.println ("new transaction " + tx.toString ());
-    var rt = tonlib.getRawTransaction(workchain, tx); 
+    //var rt = tonlib.getRawTransaction(workchain, tx); 
     //System.out.println ("raw new transaction " + rt.toString ());
 
     var in_msg = rt.getIn_msg ();
@@ -296,27 +296,28 @@ public class Exec {
 
     /* inbound message, probably inbound transfer */
     if (out_msgs.size() == 0) {
-      /*System.out.println ("Inbound transfer: from=" + uniform_account_name (workchain, in_msg.getSource ()) 
+      System.out.println ("Inbound transfer: from=" + uniform_account_name (workchain, in_msg.getSource ()) 
                           + " to=" + uniform_account_name (workchain, in_msg.getDestination ()) + " value=" 
                           + in_msg.getValue ()  +" fwd_fee=" + in_msg.getFwd_fee () + " fee=" + rt.getFee () 
-                          + " storage_fee=" + rt.getStorage_fee () + " failed=" + failed + " action_failed=" + action_failed); */
+                          + " storage_fee=" + rt.getStorage_fee () + " failed=" + failed + " action_failed=" + action_failed); 
     } else {
-      /*for (var out_msg : out_msgs) {
+      for (var out_msg : out_msgs) {
         System.out.println ("Outbound transfer: from=" + uniform_account_name (workchain, out_msg.getSource ()) 
                             + " to=" + uniform_account_name (workchain, out_msg.getDestination ()) + " value=" 
                             + out_msg.getValue () + " fwd_fee=" + out_msg.getFwd_fee () + " fee(total)=" + rt.getFee () 
                             + " storage_fee(total)=" + rt.getStorage_fee () + " failed=" + failed + " action_failed=" + action_failed);
-      }*/
+      }
     }
   
     jetton_message_get_transfer_amount(in_msg);
   }
   
   public void scan_new_block_transactions (BlockIdExt block_id) {
-    BlockTransactions t = tonlib.getBlockTransactions(block_id, 1000);
+    System.out.println ("scanning block with seqno " + last_mc_seqno);
+    BlockTransactionsExt t = tonlib.getBlockTransactionsExt(block_id, 1000);
 
     while (true) {
-      List<ShortTxId> transactions = t.getTransactions ();
+      List<RawTransaction> transactions = t.getTransactions ();
       for (var tx : transactions) {
         new_transaction_callback ((byte)block_id.getWorkchain().intValue (), tx);
       }
@@ -326,7 +327,8 @@ public class Exec {
       }
  
       var last = transactions.get(transactions.size() - 1);
-      t = tonlib.getBlockTransactions (block_id, 1, last.getLt().longValue (), last.getHash ());
+      var last_id = last.getTransaction_id();
+      t = tonlib.getBlockTransactionsExt (block_id, 1, last_id.getLt().longValue (), last_id.getHash ());
     }
   }
 
@@ -358,6 +360,7 @@ public class Exec {
   }
 
   public void scan_new_mc_block_transactions (long seqno) {
+    System.out.println ("scanning mc block with seqno " + last_mc_seqno);
     BlockIdExt block_id = tonlib.lookupBlock(seqno, -1, 0x8000000000000000L, 0, 0);
     if (block_id.getSeqno ().longValue () < seqno) {
       return;
@@ -395,8 +398,10 @@ public class Exec {
     boolean quit = false;
     while (!quit) {
       try {
+        System.out.println ("scanning block with seqno " + last_mc_seqno);
         scan_new_transactions ();
       } catch (Exception e) {
+        System.out.println ("exception");
         throw e;
         // try again later?
         // check exception type?
@@ -420,7 +425,9 @@ public class Exec {
     var tonIO = tl.getTonIO();;
     tonlib = tonIO.getTonClient ();
     BlockIdExt last_mc_block = tonlib.getLast().getLast();
+    System.out.println ("last block_seqno is " + last_mc_block.getSeqno().longValue ()); 
     last_mc_block = tonlib.getLast().getLast();
+    System.out.println ("last block_seqno is " + last_mc_block.getSeqno().longValue ()); 
     last_mc_seqno = last_mc_block.getSeqno ().longValue ();
     last_shards = new HashSet<String> ();
     known_contracts = new HashMap<String,String> ();
@@ -933,7 +940,7 @@ public class Exec {
         
       long op = slice.loadUint(32).longValue();
 
-      long transfer_opcode = Long.valueOf("f8a7ea5", 16);
+      long transfer_opcode = 0xf8a7ea5L; 
       long inbound_transfer_opcode = Long.valueOf("178d4519", 16);
       long burn_opcode = Long.valueOf("595f07bc", 16);
 

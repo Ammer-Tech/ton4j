@@ -23,7 +23,7 @@ public class TonClient {
     private Object readResult(UUID uuid) {
         long startTs = System.currentTimeMillis();
         Object result = null;
-        while (System.currentTimeMillis() - startTs < 60_000) {
+        while (System.currentTimeMillis() - startTs < 600_000) {
             result = tonIO.getOut().remove(uuid);
             if (result != null) return result;
             synchronized (tonIO.getOut()) {
@@ -207,6 +207,36 @@ public class TonClient {
         query.setType(query.getTypeObjectName());
         tonIO.submitRequest(JsonStream.serialize(query));
         return (BlockTransactions) readResult(query.getTag());
+    }
+
+    public BlockTransactionsExt getBlockTransactionsExt(BlockIdExt fullblock, long count, long afterLt, String afterHash) {
+        AccountTransactionId afterTx = AccountTransactionId.builder()
+                .account(afterHash)
+                .lt(BigInteger.valueOf(afterLt))
+                .build();
+        return getBlockTransactionsExt(fullblock, count, afterTx);
+    }
+
+    public BlockTransactionsExt getBlockTransactionsExt(BlockIdExt fullblock, long count) {
+        return getBlockTransactionsExt(fullblock, count, null);
+    }
+
+    public BlockTransactionsExt getBlockTransactionsExt(BlockIdExt fullblock, long count, AccountTransactionId afterTx) {
+        int mode = 7;
+        if (afterTx != null) mode = 7 + 128;
+        if (afterTx == null) afterTx = AccountTransactionId.builder()
+                    .account("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=").lt(BigInteger.valueOf(0)).build();
+
+        GetBlockTransactionsExtQuery query = GetBlockTransactionsExtQuery.builder()
+                .id(fullblock)
+                .mode(mode)
+                .count(count)
+                .after(afterTx)
+                .build();
+
+        query.setType(query.getTypeObjectName());
+        tonIO.submitRequest(JsonStream.serialize(query));
+        return (BlockTransactionsExt) readResult(query.getTag());
     }
 
     /**

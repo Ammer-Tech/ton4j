@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.neodix42</groupId>
   <artifactId>utils</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.8</version>
   <dependencies>
     <dependency>
       <groupId>commons-codec</groupId>

@@ -96,11 +96,16 @@ public class TonIO {
                         continue;
                     }
                     Any t = JsonIterator.deserialize(result);
-                    var x = t.as(TypeToClassMap.classes.get(t.toString("@type")));
-                    if (t.get("@extra").as(UUID.class) != null) {
-                        out.putIfAbsent(t.get("@extra").as(UUID.class), x);
-                        synchronized (out) {
-                            out.notifyAll();
+                    if(t.toString("@type").equals("error")){
+                        System.out.println("An error was detected " + JsonStream.serialize(t));
+                    }
+                    else {
+                        var x = t.as(TypeToClassMap.classes.get(t.toString("@type")));
+                        if (t.get("@extra").as(UUID.class) != null) {
+                            out.putIfAbsent(t.get("@extra").as(UUID.class), x);
+                            synchronized (out) {
+                                out.notifyAll();
+                            }
                         }
                     }
                 }

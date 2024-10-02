@@ -3,14 +3,14 @@
   "component": {
     "group": "io.github.neodix42",
     "module": "tonlib",
-    "version": "0.0.3",
+    "version": "0.0.8",
     "attributes": {
       "org.gradle.status": "release"
     }
   },
   "createdBy": {
     "gradle": {
-      "version": "8.4"
+      "version": "8.8"
     }
   },
   "variants": [
@@ -25,13 +25,13 @@
       },
       "files": [
         {
-          "name": "tonlib-0.0.3.jar",
-          "url": "tonlib-0.0.3.jar",
-          "size": 306400,
-          "sha512": "fc51c4fa0c4d96d4bf322b3b062b77cdc3b8dce683e1defb9ac486187fff9c5f54f8938f9e968d64b106f46cd59d67d3d587f112bc0a32ce1383c56c2950d940",
-          "sha256": "147966637b1a7229c16c0a367311256b1bd68234118c3264af621bcb554fcc3e",
-          "sha1": "0f1cd177742bc21a535b5869b0ad6032face997b",
-          "md5": "ac8c2458ce67bd25239187827de64ea1"
+          "name": "tonlib-0.0.8.jar",
+          "url": "tonlib-0.0.8.jar",
+          "size": 310987,
+          "sha512": "7a0a29f7695aa1ee78ff997adde1ce633934c3595cd2d3d7173fbec776ded681daaf8889654a7a7b684ae014ef8505828e26a543ddf9f35dc1bfaae45856156e",
+          "sha256": "015ef75cada37b286b8286f5ecbbd55ac2276d3ab7e842ef2464022a8cb6f287",
+          "sha1": "503de55c1f81ec9d8e3809a425d1c5e6b4f4ac70",
+          "md5": "4dc9bc14624c933d0adca67718583bc7"
         }
       ]
     },
@@ -49,21 +49,21 @@
           "group": "io.github.neodix42",
           "module": "utils",
           "version": {
-            "requires": "0.0.3"
+            "requires": "0.0.8"
           }
         },
         {
           "group": "io.github.neodix42",
           "module": "address",
           "version": {
-            "requires": "0.0.3"
+            "requires": "0.0.8"
           }
         },
         {
           "group": "io.github.neodix42",
           "module": "cell",
           "version": {
-            "requires": "0.0.3"
+            "requires": "0.0.8"
           }
         },
         {
@@ -90,13 +90,13 @@
       ],
       "files": [
         {
-          "name": "tonlib-0.0.3.jar",
-          "url": "tonlib-0.0.3.jar",
-          "size": 306400,
-          "sha512": "fc51c4fa0c4d96d4bf322b3b062b77cdc3b8dce683e1defb9ac486187fff9c5f54f8938f9e968d64b106f46cd59d67d3d587f112bc0a32ce1383c56c2950d940",
-          "sha256": "147966637b1a7229c16c0a367311256b1bd68234118c3264af621bcb554fcc3e",
-          "sha1": "0f1cd177742bc21a535b5869b0ad6032face997b",
-          "md5": "ac8c2458ce67bd25239187827de64ea1"
+          "name": "tonlib-0.0.8.jar",
+          "url": "tonlib-0.0.8.jar",
+          "size": 310987,
+          "sha512": "7a0a29f7695aa1ee78ff997adde1ce633934c3595cd2d3d7173fbec776ded681daaf8889654a7a7b684ae014ef8505828e26a543ddf9f35dc1bfaae45856156e",
+          "sha256": "015ef75cada37b286b8286f5ecbbd55ac2276d3ab7e842ef2464022a8cb6f287",
+          "sha1": "503de55c1f81ec9d8e3809a425d1c5e6b4f4ac70",
+          "md5": "4dc9bc14624c933d0adca67718583bc7"
         }
       ]
     },
@@ -110,13 +110,13 @@
       },
       "files": [
         {
-          "name": "tonlib-0.0.3-sources.jar",
-          "url": "tonlib-0.0.3-sources.jar",
-          "size": 53204,
-          "sha512": "df2f29e331a96716422b990ae7dcbc888c40cec0c33304694735fc5d504e30a32c8bfdfbca64f5501387c4bd6ba96d0dac7fd853edc2a4d96670cc379bd4d79d",
-          "sha256": "109e0ceb27fa0968d72160eec1523dac65bf0733ef890333af59ab3b3d9150c8",
-          "sha1": "a848b28d535615eeb22e6cdbf22b91ad19a998db",
-          "md5": "2d2e224ad69eb0d20676e870747fc037"
+          "name": "tonlib-0.0.8-sources.jar",
+          "url": "tonlib-0.0.8-sources.jar",
+          "size": 53808,
+          "sha512": "479d7f2aae4345a803d4a0cec7644f8408c4f282eb7ac79873bc265657ebd71dd01a6c611c40ee4cae35afc52152648de1dd58ec3ce744bdba04dd63ba56d3ca",
+          "sha256": "4ac6e302729eca575f23a105d765935a9884f792efd0056b692756a61068cb66",
+          "sha1": "24f09a6097a907b0cce76ab642a1cb0331b962ac",
+          "md5": "16cc7990489612ddbf51043a71b72ac3"
         }
       ]
     }

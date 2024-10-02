@@ -3,14 +3,14 @@
   "component": {
     "group": "io.github.neodix42",
     "module": "cell",
-    "version": "0.0.3",
+    "version": "0.0.8",
     "attributes": {
       "org.gradle.status": "release"
     }
   },
   "createdBy": {
     "gradle": {
-      "version": "8.4"
+      "version": "8.8"
     }
   },
   "variants": [
@@ -25,13 +25,13 @@
       },
       "files": [
         {
-          "name": "cell-0.0.3.jar",
-          "url": "cell-0.0.3.jar",
+          "name": "cell-0.0.8.jar",
+          "url": "cell-0.0.8.jar",
           "size": 32471,
-          "sha512": "4b8d24693c9cdfde45c0e1d4a54466bd3bba81d00ab7c802ccd4decc8b89478339db1bc0440daab1b6e030dba7a3d1cce8804f076fdb42f696d6980437822772",
-          "sha256": "043859c2238dbb610b6d5997d71b46aa9f2a0058d25c0b9ddba52ab092c4bf4f",
-          "sha1": "23694843ce508f52b08c249ee1e856efbd5bdd44",
-          "md5": "11a3df7bfab34270ddd82c1d2c92b9bd"
+          "sha512": "c60c33e3d3cec2a2bf6402ece3c899484a86964921157c07a5edb6e40a010f0a7deef3e65f243664ff46f2fdad387233e1b5cb0cf37549a5a0aaafafb745f963",
+          "sha256": "7e358166b20d861285c2beca4806816f0cc87b120b00f3c98352d2f105a7cd0f",
+          "sha1": "d8b001ea57b2f5fa9a6fdee11e643fbf94ba48d5",
+          "md5": "0e682cd123ef22b1b34bb375db50fdec"
         }
       ]
     },
@@ -49,21 +49,21 @@
           "group": "io.github.neodix42",
           "module": "utils",
           "version": {
-            "requires": "0.0.3"
+            "requires": "0.0.8"
           }
         },
         {
           "group": "io.github.neodix42",
           "module": "bitstring",
           "version": {
-            "requires": "0.0.3"
+            "requires": "0.0.8"
           }
         },
         {
           "group": "io.github.neodix42",
           "module": "address",
           "version": {
-            "requires": "0.0.3"
+            "requires": "0.0.8"
           }
         },
         {
@@ -83,13 +83,13 @@
       ],
       "files": [
         {
-          "name": "cell-0.0.3.jar",
-          "url": "cell-0.0.3.jar",
+          "name": "cell-0.0.8.jar",
+          "url": "cell-0.0.8.jar",
           "size": 32471,
-          "sha512": "4b8d24693c9cdfde45c0e1d4a54466bd3bba81d00ab7c802ccd4decc8b89478339db1bc0440daab1b6e030dba7a3d1cce8804f076fdb42f696d6980437822772",
-          "sha256": "043859c2238dbb610b6d5997d71b46aa9f2a0058d25c0b9ddba52ab092c4bf4f",
-          "sha1": "23694843ce508f52b08c249ee1e856efbd5bdd44",
-          "md5": "11a3df7bfab34270ddd82c1d2c92b9bd"
+          "sha512": "c60c33e3d3cec2a2bf6402ece3c899484a86964921157c07a5edb6e40a010f0a7deef3e65f243664ff46f2fdad387233e1b5cb0cf37549a5a0aaafafb745f963",
+          "sha256": "7e358166b20d861285c2beca4806816f0cc87b120b00f3c98352d2f105a7cd0f",
+          "sha1": "d8b001ea57b2f5fa9a6fdee11e643fbf94ba48d5",
+          "md5": "0e682cd123ef22b1b34bb375db50fdec"
         }
       ]
     },
@@ -103,13 +103,13 @@
       },
       "files": [
         {
-          "name": "cell-0.0.3-sources.jar",
-          "url": "cell-0.0.3-sources.jar",
+          "name": "cell-0.0.8-sources.jar",
+          "url": "cell-0.0.8-sources.jar",
           "size": 17696,
-          "sha512": "386f82e8b1ed90e5bd5c75fdf043ea65e58950242ef604a071c4ce40d5890f2d9e7667d111c59cfa6d67dcd0ec39c00a2a6c9024290d3d4dcfb139b4b2add223",
-          "sha256": "ced878e7b66fa9df5b121ddc3cc8ed85ece1ccc285001063df2c9396f354ff61",
-          "sha1": "a07bf34d810cbade42993da171a4e30f8bfd1bd2",
-          "md5": "8bc9a6a9271eff9e06500135129c3d62"
+          "sha512": "6300efdc1b90be129d05a5f067cc243eb05f60789471f5aca5d8e709ed1759a678fa46b2207017dce450d620eb8fd4f1510a06bd893adef17f7a03887c5172f7",
+          "sha256": "3db8158380cc1bb8b18f1d8c70493a917fddb7c61eaad53f646ec242b3c2b88a",
+          "sha1": "8f8146dad32a9301ce53cae984e0eb1cada2e807",
+          "md5": "b3800bb8ec1590db9fdb09eafcb46400"
         }
       ]
     }

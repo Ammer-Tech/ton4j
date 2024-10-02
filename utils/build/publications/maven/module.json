@@ -3,14 +3,14 @@
   "component": {
     "group": "io.github.neodix42",
     "module": "utils",
-    "version": "0.0.3",
+    "version": "0.0.8",
     "attributes": {
       "org.gradle.status": "release"
     }
   },
   "createdBy": {
     "gradle": {
-      "version": "8.4"
+      "version": "8.8"
     }
   },
   "variants": [
@@ -25,13 +25,13 @@
       },
       "files": [
         {
-          "name": "utils-0.0.3.jar",
-          "url": "utils-0.0.3.jar",
+          "name": "utils-0.0.8.jar",
+          "url": "utils-0.0.8.jar",
           "size": 10114,
-          "sha512": "a252f2dfe66e077f297442f560068bfcca9acc0a7d7f13c5181725c83e5dd9339ee2a233979c4db4de3dc7198d0b1dd46de96089b6a8f3954d38fd54e983e62b",
-          "sha256": "b4893aba531f2efe53573d7c34cc611957425850f392a41c0fbed75be9018bc8",
-          "sha1": "01c088c61e8906c7561b683b8281722fc827f446",
-          "md5": "cc00e4c19451460ceca8c04d48f0b22a"
+          "sha512": "d1d24ac969ec23a79ebb2abe2d6c29856f50cfc931fdf70cb8d0ea096efaacf6888e7e2c0a47b87a750befa770ef38df81ab0bd470214b3b22868ef8e672a011",
+          "sha256": "9790b7f87055ab504d53709705bd04317db2ae0889543888c2521d8e157c0e91",
+          "sha1": "698d774dc1e296c6d0312b5386ee3201be74a789",
+          "md5": "aed4778bf8f59eddd6e14abca817d9cc"
         }
       ]
     },
@@ -62,13 +62,13 @@
       ],
       "files": [
         {
-          "name": "utils-0.0.3.jar",
-          "url": "utils-0.0.3.jar",
+          "name": "utils-0.0.8.jar",
+          "url": "utils-0.0.8.jar",
           "size": 10114,
-          "sha512": "a252f2dfe66e077f297442f560068bfcca9acc0a7d7f13c5181725c83e5dd9339ee2a233979c4db4de3dc7198d0b1dd46de96089b6a8f3954d38fd54e983e62b",
-          "sha256": "b4893aba531f2efe53573d7c34cc611957425850f392a41c0fbed75be9018bc8",
-          "sha1": "01c088c61e8906c7561b683b8281722fc827f446",
-          "md5": "cc00e4c19451460ceca8c04d48f0b22a"
+          "sha512": "d1d24ac969ec23a79ebb2abe2d6c29856f50cfc931fdf70cb8d0ea096efaacf6888e7e2c0a47b87a750befa770ef38df81ab0bd470214b3b22868ef8e672a011",
+          "sha256": "9790b7f87055ab504d53709705bd04317db2ae0889543888c2521d8e157c0e91",
+          "sha1": "698d774dc1e296c6d0312b5386ee3201be74a789",
+          "md5": "aed4778bf8f59eddd6e14abca817d9cc"
         }
       ]
     },
@@ -82,13 +82,13 @@
       },
       "files": [
         {
-          "name": "utils-0.0.3-sources.jar",
-          "url": "utils-0.0.3-sources.jar",
+          "name": "utils-0.0.8-sources.jar",
+          "url": "utils-0.0.8-sources.jar",
           "size": 4663,
-          "sha512": "a7b411a60d187cfc5f8eec64de07c5381837425f12585274283148ed87c116a990d826236e11741ac3f989d62be532de370618a7c4337a3191ffb74ecdc19ced",
-          "sha256": "b32bcfc0fb12ebd5662c7e492cc421d5dec352ebfd3831ec5a3652ffefc5c0e3",
-          "sha1": "3cc60ae3ef65651b3cbab3303071ee814aae66b3",
-          "md5": "d44edaf92195a4ca8a398a7ea86e0253"
+          "sha512": "6ce69dff573776efb61841572471a260eebe045ba2321358e6bd962b8f1dd3c5209b3a74cd7dd21f4163fc91fcf37b1d35e2635ad55fd69307e58cd8c2b11542",
+          "sha256": "ad95446aa62a2fee7e146480f085693d7fef500b5a3bf1ba3c82d3f3ae781c3e",
+          "sha1": "078246fa3fa508947dafffa493df8b82fa98dc7d",
+          "md5": "66d1d871d7e8b563cf6e2de1c445fefb"
         }
       ]
     }

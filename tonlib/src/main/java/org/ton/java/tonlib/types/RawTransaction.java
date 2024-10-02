@@ -12,7 +12,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+
+//raw.transaction address:accountAddress utime:int53 data:bytes transaction_id:internal.transactionId fee:int64 storage_fee:int64 other_fee:int64 in_msg:raw.message out_msgs:vector<raw.message> = raw.Transaction;
 public class RawTransaction extends TypedAsyncObject {
+    private AccountAddress address;
     private long utime;
     private String data;
     private LastTransactionId transaction_id;

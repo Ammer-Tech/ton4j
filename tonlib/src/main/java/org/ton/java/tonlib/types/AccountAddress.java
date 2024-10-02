@@ -10,5 +10,5 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountAddress {
-    private RawAccountForm account_address;
+    private String account_address;
 }

@@ -328,7 +328,8 @@ public class Exec {
  
       var last = transactions.get(transactions.size() - 1);
       var last_id = last.getTransaction_id();
-      t = tonlib.getBlockTransactionsExt (block_id, 1, last_id.getLt().longValue (), last_id.getHash ());
+      var last_addr = new Address(last.getAddress().getAccount_address());
+      t = tonlib.getBlockTransactionsExt (block_id, 1, last_id.getLt().longValue (), last_addr.hashPart);
     }
   }
 

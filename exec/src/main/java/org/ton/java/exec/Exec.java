@@ -34,6 +34,7 @@ import com.jsoniter.output.EncodingMode;
 import com.jsoniter.output.JsonStream;
 import com.jsoniter.spi.DecodingMode;
 import com.jsoniter.spi.JsoniterSpi;
+import com.jsoniter.output.JsonStream;
 
 import static java.util.Objects.isNull;
 
@@ -309,12 +310,18 @@ public class Exec {
       }
     }
   
-    jetton_message_get_transfer_amount(in_msg);
+    var info = jetton_message_get_info (in_msg);
+    if (info.value != BigInteger.valueOf(0) && info.src_wallet != null && info.dst_wallet != null) {
+      System.out.println ("value = " + info.value + " workchain = " + workchain + " src = " + info.src_wallet.toString(true, false, true, false) + 
+          " dst = " + info.dst_wallet.toString(true, false, true, false));
+      var req = JsonStream.serialize(rt);
+      System.out.println ("json = " + req);
+    }
   }
   
   public void scan_new_block_transactions (BlockIdExt block_id) {
     System.out.println ("scanning block with seqno " + last_mc_seqno);
-    BlockTransactionsExt t = tonlib.getBlockTransactionsExt(block_id, 1000);
+    BlockTransactionsExt t = tonlib.getBlockTransactionsExt(block_id, 10);
 
     while (true) {
       List<RawTransaction> transactions = t.getTransactions ();
@@ -329,7 +336,9 @@ public class Exec {
       var last = transactions.get(transactions.size() - 1);
       var last_id = last.getTransaction_id();
       var last_addr = new Address(last.getAddress().getAccount_address());
-      t = tonlib.getBlockTransactionsExt (block_id, 1, last_id.getLt().longValue (), last_addr.hashPart);
+
+      System.out.println ("seqno=" + block_id.getSeqno() + " last_addr=" + last_addr.toString ());
+      t = tonlib.getBlockTransactionsExt (block_id, 1, last_id.getLt().longValue (), Utils.bytesToBase64(last_addr.hashPart));
     }
   }
 
@@ -961,6 +970,51 @@ public class Exec {
       return BigInteger.valueOf(0);
     } catch (Error e) {
       return BigInteger.valueOf(0);
+    }
+    //return BigInteger.zero();
+  }
+ 
+  class JettonMessageInfo {
+    JettonMessageInfo(BigInteger _value, Address _src_wallet, Address _dst_wallet) {
+      value = _value;
+      src_wallet = _src_wallet;
+      dst_wallet = _dst_wallet;
+    }
+    public BigInteger value;
+    public Address src_wallet;
+    public Address dst_wallet;
+  };
+
+  private JettonMessageInfo jetton_message_get_info(RawMessage message) {
+    try {
+      var body = message.getMsg_data().getBody();
+      var body_cell = Cell.fromBoc (Utils.base64ToBytes (body)); 
+      var slice = CellSlice.beginParse(body_cell);
+        
+      long op = slice.loadUint(32).longValue();
+
+      long transfer_opcode = 0xf8a7ea5L; 
+      long inbound_transfer_opcode = Long.valueOf("178d4519", 16);
+      long burn_opcode = Long.valueOf("595f07bc", 16);
+
+      if (op != transfer_opcode && op != inbound_transfer_opcode && op != burn_opcode) {
+        return new JettonMessageInfo(BigInteger.valueOf(0), null, null);
+      }
+
+      BigInteger query_id = slice.loadUint(64);
+      BigInteger value = slice.loadCoins();
+      Address src_wallet = slice.loadAddress();
+      Address dst_wallet = slice.loadAddress();
+
+      if (op == inbound_transfer_opcode) {
+        return new JettonMessageInfo(value, src_wallet, dst_wallet);
+      } else {
+        return new JettonMessageInfo(value.multiply(new BigInteger("-1")), src_wallet, dst_wallet);
+      }
+    } catch (Exception e) {
+      return new JettonMessageInfo(BigInteger.valueOf(0), null, null);
+    } catch (Error e) {
+      return new JettonMessageInfo(BigInteger.valueOf(0), null, null);
     }
     //return BigInteger.zero();
   }

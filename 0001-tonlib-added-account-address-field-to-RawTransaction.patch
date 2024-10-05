@@ -1,0 +1,49 @@
+From 38880d2f8c987174b7e231f0f0d9078660333c0e Mon Sep 17 00:00:00 2001
+From: Vitaly Valtman <vvaltman@germanium.valtman.ch>
+Date: Wed, 2 Oct 2024 14:48:24 +0200
+Subject: [PATCH] tonlib: added account address field to RawTransaction, fixed
+ AccountAddress structure
+
+---
+ .../main/java/org/ton/java/tonlib/types/AccountAddress.java  | 4 ++--
+ .../main/java/org/ton/java/tonlib/types/RawTransaction.java  | 5 ++++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/tonlib/src/main/java/org/ton/java/tonlib/types/AccountAddress.java b/tonlib/src/main/java/org/ton/java/tonlib/types/AccountAddress.java
+index ceccf0d..397909b 100644
+--- a/tonlib/src/main/java/org/ton/java/tonlib/types/AccountAddress.java
++++ b/tonlib/src/main/java/org/ton/java/tonlib/types/AccountAddress.java
+@@ -10,5 +10,5 @@ import lombok.experimental.SuperBuilder;
+ @AllArgsConstructor
+ @NoArgsConstructor
+ public class AccountAddress {
+-    private RawAccountForm account_address;
+-}
+\ No newline at end of file
++    private String account_address;
++}
+diff --git a/tonlib/src/main/java/org/ton/java/tonlib/types/RawTransaction.java b/tonlib/src/main/java/org/ton/java/tonlib/types/RawTransaction.java
+index 2575552..2756cdd 100644
+--- a/tonlib/src/main/java/org/ton/java/tonlib/types/RawTransaction.java
++++ b/tonlib/src/main/java/org/ton/java/tonlib/types/RawTransaction.java
+@@ -12,7 +12,10 @@ import java.util.List;
+ @Data
+ @AllArgsConstructor
+ @NoArgsConstructor
++
++//raw.transaction address:accountAddress utime:int53 data:bytes transaction_id:internal.transactionId fee:int64 storage_fee:int64 other_fee:int64 in_msg:raw.message out_msgs:vector<raw.message> = raw.Transaction;
+ public class RawTransaction extends TypedAsyncObject {
++    private AccountAddress address;
+     private long utime;
+     private String data;
+     private LastTransactionId transaction_id;
+@@ -26,4 +29,4 @@ public class RawTransaction extends TypedAsyncObject {
+     public String getTypeObjectName() {
+         return "raw.transaction";
+     }
+-}
+\ No newline at end of file
++}
+-- 
+2.39.5 (Apple Git-154)
+

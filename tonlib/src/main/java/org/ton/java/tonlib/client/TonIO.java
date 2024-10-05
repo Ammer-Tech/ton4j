@@ -110,7 +110,7 @@ public class TonIO {
                     }
                 }
                 catch (Exception e){
-                    System.out.println("An unexpected message arrived - continuing anyway");
+                    System.out.println("An unexpected message arrived - continuing anyway {}");
                 }
             }
         }

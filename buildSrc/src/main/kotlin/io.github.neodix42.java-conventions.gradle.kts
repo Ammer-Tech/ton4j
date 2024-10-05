@@ -15,7 +15,7 @@ repositories {
 }
 
 group = "io.github.neodix42"
-version = "0.0.8"
+version = "0.0.9"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 java {
